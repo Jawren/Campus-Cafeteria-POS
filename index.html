@@ -10,7 +10,7 @@
   <body>
     <!-- ===== HEADER ===== -->
     <header class="app-header">
-      <h1>Campus Cafeteria POS</h1s>
+      <h1>Campus Cafeteria POS</h1>
       <p>Walk-up Lunch Ordering System</p>
     </header>
 
@@ -20,8 +20,15 @@
       <section class="panel products-panel" id="products-section">
         <h2>Menu</h2>
 
+        <!-- Each card stores its id, name and price in data- attributes.
+           script.js reads these when "Add to Cart" is clicked. -->
         <div class="product-grid">
-          <div class="product-card" data-name="Rice (Plain)" data-price="15">
+          <div
+            class="product-card"
+            data-id="1"
+            data-name="Rice (Plain)"
+            data-price="15"
+          >
             <h3 class="product-name">Rice (Plain)</h3>
             <p class="product-price">₱15.00</p>
             <button type="button" class="add-btn">Add to Cart</button>
@@ -29,6 +36,7 @@
 
           <div
             class="product-card"
+            data-id="2"
             data-name="Fried Chicken (1 pc)"
             data-price="65"
           >
@@ -37,7 +45,12 @@
             <button type="button" class="add-btn">Add to Cart</button>
           </div>
 
-          <div class="product-card" data-name="Pork Adobo" data-price="60">
+          <div
+            class="product-card"
+            data-id="3"
+            data-name="Pork Adobo"
+            data-price="60"
+          >
             <h3 class="product-name">Pork Adobo</h3>
             <p class="product-price">₱60.00</p>
             <button type="button" class="add-btn">Add to Cart</button>
@@ -45,6 +58,7 @@
 
           <div
             class="product-card"
+            data-id="4"
             data-name="Vegetable Side Dish"
             data-price="35"
           >
@@ -53,13 +67,23 @@
             <button type="button" class="add-btn">Add to Cart</button>
           </div>
 
-          <div class="product-card" data-name="Iced Tea (cup)" data-price="20">
+          <div
+            class="product-card"
+            data-id="5"
+            data-name="Iced Tea (cup)"
+            data-price="20"
+          >
             <h3 class="product-name">Iced Tea (cup)</h3>
             <p class="product-price">₱20.00</p>
             <button type="button" class="add-btn">Add to Cart</button>
           </div>
 
-          <div class="product-card" data-name="Bottled Water" data-price="20">
+          <div
+            class="product-card"
+            data-id="6"
+            data-name="Bottled Water"
+            data-price="20"
+          >
             <h3 class="product-name">Bottled Water</h3>
             <p class="product-price">₱20.00</p>
             <button type="button" class="add-btn">Add to Cart</button>
@@ -72,18 +96,24 @@
         <!-- SHOPPING CART -->
         <section class="panel cart-panel" id="cart-section">
           <h2>Shopping Cart</h2>
+
+          <!-- Success messages (e.g. "Pork Adobo added to cart.") appear here -->
+          <p id="cart-message" class="message"></p>
+
           <table class="cart-table">
             <thead>
               <tr>
-                <th>Product</th>
-                <th>Quantity</th>
+                <th>Item</th>
                 <th>Unit Price</th>
+                <th>Quantity</th>
                 <th>Subtotal</th>
+                <th>Action</th>
               </tr>
             </thead>
+            <!-- Rows are drawn by renderCart() in script.js -->
             <tbody id="cart-body">
               <tr>
-                <td colspan="4" class="empty-message">The cart is empty.</td>
+                <td colspan="5" class="empty-message">Cart is empty.</td>
               </tr>
             </tbody>
           </table>
@@ -93,7 +123,7 @@
         <section class="panel summary-panel" id="summary-section">
           <h2>Order Summary</h2>
           <div class="summary-row">
-            <span>Total Amount Due:</span>
+            <span>TOTAL AMOUNT DUE:</span>
             <span id="total-amount">₱0.00</span>
           </div>
         </section>
@@ -101,7 +131,7 @@
         <!-- PAYMENT -->
         <section class="panel payment-panel" id="payment-section">
           <h2>Payment</h2>
-          <label for="cash-input">Cash Amount (₱)</label>
+          <label for="cash-input">Amount Paid (Cash)</label>
           <input
             type="number"
             id="cash-input"
@@ -112,12 +142,20 @@
           <button type="button" id="confirm-payment-btn" class="confirm-btn">
             Confirm Payment
           </button>
+          <button type="button" id="new-transaction-btn" class="new-txn-btn">
+            New Transaction
+          </button>
         </section>
       </div>
 
-      <!-- RECEIPT (full width) -->
+      <!-- PAYMENT CONFIRMATION + RECEIPT (full width) -->
       <section class="panel receipt-panel" id="receipt-section">
-        <h2>Receipt</h2>
+        <h2>Payment Confirmation &amp; Receipt</h2>
+
+        <!-- Filled by renderConfirmation() after payment -->
+        <div id="payment-confirmation"></div>
+
+        <!-- Filled by renderReceipt() after payment -->
         <div id="receipt-content">
           <p class="receipt-placeholder">No receipt has been generated yet.</p>
         </div>
