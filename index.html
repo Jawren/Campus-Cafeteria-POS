@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <!-- UTF-8 is required so the peso sign (₱) displays correctly -->
+    <!-- UTF-8 is required so the peso sign (₱) and emojis display correctly -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Campus Cafeteria POS</title>
@@ -10,158 +10,106 @@
   <body>
     <!-- ===== HEADER ===== -->
     <header class="app-header">
-      <h1>Campus Cafeteria POS</h1>
-      <p>Walk-up Lunch Ordering System</p>
+      <div class="header-inner">
+        <span class="brand-icon" aria-hidden="true">🍽️</span>
+        <div>
+          <h1>Campus Cafeteria POS</h1>
+          <p>Walk-up Lunch Ordering System</p>
+        </div>
+      </div>
     </header>
 
     <!-- ===== MAIN LAYOUT ===== -->
     <main class="layout">
-      <!-- LEFT COLUMN: PRODUCT LIST -->
-      <section class="panel products-panel" id="products-section">
-        <h2>Menu</h2>
+      <!-- SECTION 1: PRODUCTS -->
+      <section class="panel section-products" id="products-section">
+        <div class="section-header">
+          <span class="step">1</span>
+          <h2>Menu</h2>
+        </div>
 
-        <!-- Each card stores its id, name and price in data- attributes.
-           script.js reads these when "Add to Cart" is clicked. -->
-        <div class="product-grid">
-          <div
-            class="product-card"
-            data-id="1"
-            data-name="Rice (Plain)"
-            data-price="15"
-          >
-            <h3 class="product-name">Rice (Plain)</h3>
-            <p class="product-price">₱15.00</p>
-            <button type="button" class="add-btn">Add to Cart</button>
-          </div>
+        <!-- Product cards are created by renderProducts() in script.js -->
+        <div class="product-grid" id="product-grid"></div>
+      </section>
 
-          <div
-            class="product-card"
-            data-id="2"
-            data-name="Fried Chicken (1 pc)"
-            data-price="65"
-          >
-            <h3 class="product-name">Fried Chicken (1 pc)</h3>
-            <p class="product-price">₱65.00</p>
-            <button type="button" class="add-btn">Add to Cart</button>
-          </div>
+      <!-- SECTION 2: CART & ORDER SUMMARY -->
+      <section class="panel section-cart" id="cart-section">
+        <div class="section-header">
+          <span class="step">2</span>
+          <h2>Cart &amp; Order Summary</h2>
+        </div>
 
-          <div
-            class="product-card"
-            data-id="3"
-            data-name="Pork Adobo"
-            data-price="60"
-          >
-            <h3 class="product-name">Pork Adobo</h3>
-            <p class="product-price">₱60.00</p>
-            <button type="button" class="add-btn">Add to Cart</button>
-          </div>
+        <!-- Cart messages (e.g. "Pork Adobo added to cart.") appear here -->
+        <p id="cart-message" class="message"></p>
 
-          <div
-            class="product-card"
-            data-id="4"
-            data-name="Vegetable Side Dish"
-            data-price="35"
-          >
-            <h3 class="product-name">Vegetable Side Dish</h3>
-            <p class="product-price">₱35.00</p>
-            <button type="button" class="add-btn">Add to Cart</button>
-          </div>
+        <table class="cart-table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th class="num">Unit Price</th>
+              <th class="center">Quantity</th>
+              <th class="num">Subtotal</th>
+              <th class="center">Action</th>
+            </tr>
+          </thead>
+          <!-- Rows are drawn by renderCart() in script.js -->
+          <tbody id="cart-body"></tbody>
+        </table>
 
-          <div
-            class="product-card"
-            data-id="5"
-            data-name="Iced Tea (cup)"
-            data-price="20"
-          >
-            <h3 class="product-name">Iced Tea (cup)</h3>
-            <p class="product-price">₱20.00</p>
-            <button type="button" class="add-btn">Add to Cart</button>
-          </div>
-
-          <div
-            class="product-card"
-            data-id="6"
-            data-name="Bottled Water"
-            data-price="20"
-          >
-            <h3 class="product-name">Bottled Water</h3>
-            <p class="product-price">₱20.00</p>
-            <button type="button" class="add-btn">Add to Cart</button>
-          </div>
+        <div class="total-box">
+          <span class="total-label">TOTAL AMOUNT DUE</span>
+          <span id="total-amount" class="total-value">₱0.00</span>
         </div>
       </section>
 
-      <!-- RIGHT COLUMN: CART, SUMMARY, PAYMENT -->
-      <div class="side-column">
-        <!-- SHOPPING CART -->
-        <section class="panel cart-panel" id="cart-section">
-          <h2>Shopping Cart</h2>
+      <!-- SECTION 3: PAYMENT & RECEIPT -->
+      <section class="panel section-payment" id="payment-section">
+        <div class="section-header">
+          <span class="step">3</span>
+          <h2>Payment &amp; Receipt</h2>
+        </div>
 
-          <!-- Success messages (e.g. "Pork Adobo added to cart.") appear here -->
-          <p id="cart-message" class="message"></p>
+        <div class="payment-layout">
+          <!-- Payment form -->
+          <div class="payment-form">
+            <label for="cash-input">Amount Paid (Cash)</label>
+            <div class="input-wrap">
+              <span class="input-prefix" aria-hidden="true">₱</span>
+              <input
+                type="number"
+                id="cash-input"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+              />
+            </div>
 
-          <table class="cart-table">
-            <thead>
-              <tr>
-                <th>Item</th>
-                <th>Unit Price</th>
-                <th>Quantity</th>
-                <th>Subtotal</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <!-- Rows are drawn by renderCart() in script.js -->
-            <tbody id="cart-body">
-              <tr>
-                <td colspan="5" class="empty-message">Cart is empty.</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
+            <!-- Payment errors (red) and success messages (green) appear here -->
+            <p id="payment-message" class="message"></p>
 
-        <!-- ORDER SUMMARY -->
-        <section class="panel summary-panel" id="summary-section">
-          <h2>Order Summary</h2>
-          <div class="summary-row">
-            <span>TOTAL AMOUNT DUE:</span>
-            <span id="total-amount">₱0.00</span>
+            <button
+              type="button"
+              id="confirm-payment-btn"
+              class="btn btn-success btn-block"
+            >
+              Confirm Payment
+            </button>
+            <button
+              type="button"
+              id="new-transaction-btn"
+              class="btn btn-neutral btn-block"
+            >
+              New Transaction
+            </button>
           </div>
-        </section>
 
-        <!-- PAYMENT -->
-        <section class="panel payment-panel" id="payment-section">
-          <h2>Payment</h2>
-          <label for="cash-input">Amount Paid (Cash)</label>
-          <input
-            type="number"
-            id="cash-input"
-            min="0"
-            step="0.01"
-            placeholder="0.00"
-          />
-
-          <!-- Payment errors (red) and success messages (green) appear here -->
-          <p id="payment-message" class="message"></p>
-
-          <button type="button" id="confirm-payment-btn" class="confirm-btn">
-            Confirm Payment
-          </button>
-          <button type="button" id="new-transaction-btn" class="new-txn-btn">
-            New Transaction
-          </button>
-        </section>
-      </div>
-
-      <!-- PAYMENT CONFIRMATION + RECEIPT (full width) -->
-      <section class="panel receipt-panel" id="receipt-section">
-        <h2>Payment Confirmation &amp; Receipt</h2>
-
-        <!-- Filled by renderConfirmation() after payment -->
-        <div id="payment-confirmation"></div>
-
-        <!-- Filled by renderReceipt() after payment -->
-        <div id="receipt-content">
-          <p class="receipt-placeholder">No receipt has been generated yet.</p>
+          <!-- Confirmation and receipt -->
+          <div class="receipt-area">
+            <!-- Filled by renderConfirmation() after payment -->
+            <div id="payment-confirmation"></div>
+            <!-- Filled by renderReceipt() after payment -->
+            <div id="receipt-content"></div>
+          </div>
         </div>
       </section>
     </main>
