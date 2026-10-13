@@ -1,7 +1,7 @@
 // Campus Cafeteria POS - script.js
-// Step 2: Cart, totals, payment, confirmation, receipt, and new transaction.
-// All data is kept in memory only (it resets when the page is reloaded).
-// Payment validation will be added in the next step.
+// Step 3: Cart, totals, payment VALIDATION, confirmation, receipt,
+// and new transaction. All data is kept in memory only
+// (it resets when the page is reloaded).
 
 // ===== DATA (in memory) =====
 let cart = []; // each item: { id, name, price, qty }
@@ -14,6 +14,7 @@ const cartBody = document.getElementById("cart-body");
 const cartMessage = document.getElementById("cart-message");
 const totalAmountEl = document.getElementById("total-amount");
 const cashInput = document.getElementById("cash-input");
+const paymentMessage = document.getElementById("payment-message");
 const confirmBtn = document.getElementById("confirm-payment-btn");
 const newTxnBtn = document.getElementById("new-transaction-btn");
 const confirmationBox = document.getElementById("payment-confirmation");
@@ -41,9 +42,26 @@ function formatDateTime(date) {
   return date.toLocaleString("en-PH");
 }
 
-// Shows a short message above the cart table (empty text hides it)
+// Shows a green message above the cart table (empty text hides it)
 function showMessage(text) {
   cartMessage.textContent = text;
+}
+
+// Shows a message near the payment input
+// type is "error" (red) or "success" (green)
+function showPaymentMessage(text, type) {
+  paymentMessage.textContent = text;
+  if (type === "error") {
+    paymentMessage.className = "message error";
+  } else {
+    paymentMessage.className = "message";
+  }
+}
+
+// Clears all messages (called at the start of every action)
+function clearMessages() {
+  showMessage("");
+  showPaymentMessage("", "success");
 }
 
 // Finds an item in the cart by its id (returns undefined if not found)
@@ -74,6 +92,8 @@ function createButton(label, className, onClick) {
 
 // Adds a product to the cart, or increases its qty if it is already there
 function addToCart(id, name, price) {
+  if (isPaid) return; // cart is locked after payment
+
   const existingItem = findCartItem(id);
 
   if (existingItem) {
@@ -82,32 +102,42 @@ function addToCart(id, name, price) {
     cart.push({ id: id, name: name, price: price, qty: 1 });
   }
 
+  clearMessages();
   showMessage(name + " added to cart.");
   renderCart();
 }
 
 // Increases the qty of a cart item by 1
 function increaseQty(id) {
+  if (isPaid) return;
+
   const item = findCartItem(id);
   item.qty = item.qty + 1;
+  clearMessages();
   renderCart();
 }
 
 // Decreases the qty of a cart item by 1, but never below 1
 function decreaseQty(id) {
+  if (isPaid) return;
+
   const item = findCartItem(id);
   if (item.qty > 1) {
     item.qty = item.qty - 1;
   }
+  clearMessages();
   renderCart();
 }
 
 // Removes an item from the cart completely
 function removeFromCart(id) {
+  if (isPaid) return;
+
   const item = findCartItem(id);
   cart = cart.filter(function (cartItem) {
     return cartItem.id !== id;
   });
+  clearMessages();
   showMessage(item.name + " removed from cart.");
   renderCart();
 }
@@ -195,11 +225,69 @@ function setOrderLocked(locked) {
   confirmBtn.disabled = locked;
 }
 
-// Processes the cash payment and shows the confirmation and receipt
-// (No validation yet - a valid amount is assumed. Added in the next step.)
+// Checks the payment, in order:
+//   a. cart is empty
+//   b. blank, not a number, or negative
+//   c. less than the total
+// Returns { valid, message, amount }
+function validatePayment(amountInput, total) {
+  const rawValue = amountInput.value.trim();
+  const invalidMessage = "Please enter a valid payment amount.";
+
+  // a. Cart is empty
+  if (cart.length === 0) {
+    return {
+      valid: false,
+      message: "Your cart is empty. Please add at least one item.",
+      amount: 0,
+    };
+  }
+
+  // b. Blank or not a number
+  //    (badInput is true when the browser cannot read the typed text, e.g. "e")
+  if (amountInput.validity.badInput || rawValue === "") {
+    return { valid: false, message: invalidMessage, amount: 0 };
+  }
+
+  const amount = roundMoney(parseFloat(rawValue));
+
+  // b. Still not a number, or negative
+  if (isNaN(amount) || amount < 0) {
+    return { valid: false, message: invalidMessage, amount: 0 };
+  }
+
+  // c. Not enough cash
+  if (amount < total) {
+    return {
+      valid: false,
+      message:
+        "Insufficient payment. Please enter at least " +
+        formatPeso(total) +
+        ".",
+      amount: amount,
+    };
+  }
+
+  // d. Valid payment
+  return { valid: true, message: "", amount: amount };
+}
+
+// Validates the payment, then shows the confirmation and receipt
 function processPayment() {
+  if (isPaid) return; // already paid - wait for New Transaction
+
+  clearMessages();
+
   const total = computeTotal();
-  const amountPaid = roundMoney(parseFloat(cashInput.value));
+  const result = validatePayment(cashInput, total);
+
+  // Invalid: show the error and stop (no receipt, no new TXN number)
+  if (!result.valid) {
+    showPaymentMessage(result.message, "error");
+    return;
+  }
+
+  const amountPaid = result.amount;
   const change = roundMoney(amountPaid - total);
 
   transactionCounter = transactionCounter + 1;
@@ -222,8 +310,12 @@ function processPayment() {
   // Lock the order so the paid cart cannot be changed or paid again
   isPaid = true;
   setOrderLocked(true);
-  showMessage("");
   renderCart();
+
+  showPaymentMessage(
+    "Payment successful. Change: " + formatPeso(change),
+    "success",
+  );
 }
 
 // Shows the "Payment Successful" box
@@ -292,7 +384,7 @@ function newTransaction() {
   confirmationBox.innerHTML = "";
   receiptContent.innerHTML =
     '<p class="receipt-placeholder">No receipt has been generated yet.</p>';
-  showMessage("");
+  clearMessages();
 
   isPaid = false;
   setOrderLocked(false);
@@ -314,6 +406,19 @@ document.querySelectorAll(".product-card").forEach(function (card) {
 
 confirmBtn.addEventListener("click", processPayment);
 newTxnBtn.addEventListener("click", newTransaction);
+
+// Pressing Enter in the cash input works like clicking Confirm Payment
+cashInput.addEventListener("keydown", function (event) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    processPayment();
+  }
+});
+
+// Typing a new amount clears the old payment message
+cashInput.addEventListener("input", function () {
+  showPaymentMessage("", "success");
+});
 
 // Draw the empty cart when the page first loads
 renderCart();
